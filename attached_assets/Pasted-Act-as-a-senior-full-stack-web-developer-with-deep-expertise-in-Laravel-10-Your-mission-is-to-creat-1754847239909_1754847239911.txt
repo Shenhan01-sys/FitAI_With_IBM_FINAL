@@ -1,0 +1,113 @@
+Act as a senior full-stack web developer with deep expertise in Laravel 10. Your mission is to create the core functional dashboard of a web application named "FitAI Yogyakarta". This is NOT a promotional landing page; it is the main application that users interact with after signing in.
+
+The application's purpose is to provide users with a highly personalized fitness, diet, and sleep plan based on their initial data. It must be interactive, motivating, and include an AI-powered chat assistant. All UI text must be in Bahasa Indonesia.
+
+**Core Technology Stack:**
+- **Backend Framework:** Laravel 10
+- **Frontend Views:** Laravel Blade templates
+- **CSS Framework:** Tailwind CSS
+- **JavaScript Framework:** **Alpine.js** for all client-side reactivity and interactivity.
+- **UI Component Library:** **Flowbite** for pre-built components like modals, alerts, tabs, and forms.
+- **Icons:** **Heroicons**.
+- **Fonts:** Google Fonts "Inter".
+
+---
+
+**APPLICATION STRUCTURE & USER FLOW**
+
+Generate the necessary code (Controllers, Routes, Blade Views) for the following user flow:
+1.  **Onboarding:** A new user inputs their personal fitness data.
+2.  **Plan Generation:** The system processes this data to create a personalized plan (workout, diet, sleep). (Simulate this logic).
+3.  **Dashboard:** The user sees their daily plan, tracks weekly progress, and accesses other features.
+4.  **Interaction:** The user can check off completed tasks and ask questions to an AI chatbot.
+
+---
+
+**DETAILED FEATURE IMPLEMENTATION**
+
+**1. Onboarding/Data Input (As a Modal)**
+
+- **Trigger:** This should be a full-screen modal from Flowbite that appears if the user has not submitted their data yet.
+- **Controller Logic (`DashboardController@showOnboarding`):** Create a method to show this view.
+- **Form Fields:** The modal must contain a form that POSTs to `DashboardController@generatePlan`. [cite_start]The form needs the following inputs[cite: 47, 86, 87]:
+    - Berat Badan (kg): `type="number"`
+    - Persentase Lemak Tubuh (%): `type="number"`
+    - Persentase Massa Otot (%): `type="number"`
+    - Usia: `type="number"`
+    - [cite_start]Tujuan (Goals): A `<select>` dropdown with options: "Cutting (Menurunkan Lemak)", "Bulking (Menambah Otot)", "Body Recomposition". [cite: 54, 91]
+- **Button:** "Buat Rencana Saya".
+
+**2. Main Dashboard (`resources/views/dashboard.blade.php`)**
+
+- **Route:** `GET /dashboard` pointing to `DashboardController@index`.
+- **Layout:** A two-column layout. The left column is wider (main content), and the right column is for a summary.
+- **Main Content (Left Column):**
+    - **Weekly Schedule View:**
+        - Title: "Jadwal Latihan Mingguan Saya".
+        - A grid of 7 cards, one for each day ("Senin" to "Minggu").
+        - **Each Card Contains:**
+            - Day Name (e.g., "Senin").
+            - Workout Plan for the day (e.g., "Latihan Dada & Trisep" or "Istirahat Aktif").
+            - **An interactive checkbox** managed by Alpine.js.
+        - **Interactivity (Alpine.js):**
+            - The component should have an `x-data` attribute to manage the state of all checkboxes (e.g., `{ completed: { mon: false, tue: false, ... } }`).
+            - When a checkbox is clicked (`@click`), it should call a function.
+            - This function toggles the completion status AND **triggers a motivational alert**.
+    - **Motivational Alert (Flowbite Alert Component):**
+        - This alert should be positioned at the top-right of the screen and managed by Alpine.js (`x-show`, `x-transition`).
+        - When triggered, it appears for 3-4 seconds and then fades out.
+        - [cite_start]The alert's text should be randomly selected from a list of encouraging phrases[cite: 68, 100]. Example list: `['Kerja Bagus! Terus Jaga Konsistensi!', 'Selesai! Satu langkah lebih dekat ke tujuanmu!', 'Luar Biasa! Tubuhmu akan berterima kasih.']`.
+
+- **Summary (Right Column):**
+    - **User Profile Card:** Shows User's Name and their main goal (e.g., "Target: Bulking").
+    - **Progress Card:**
+        - A circular progress bar or simple text showing weekly completion. Example: "Progress Minggu Ini: 2 dari 5 Latihan Selesai". The numbers should be dynamically updated by Alpine.js based on the checkboxes.
+
+**3. Detailed Plan Page (`resources/views/rencana-saya.blade.php`)**
+
+- **Route:** `GET /rencana-saya` pointing to `DashboardController@showPlan`.
+- **UI:** Use a Tab component from Flowbite.
+- **Tab 1: "Rekomendasi Latihan"**
+    - A detailed breakdown of exercises for each workout day.
+    - Example for "Latihan Dada & Trisep":
+        - Bench Press: 4 set x 10 repetisi
+        - Dumbbell Flys: 3 set x 12 repetisi
+        - Tricep Pushdown: 4 set x 15 repetisi
+- **Tab 2: "Rekomendasi Pola Makan"**
+    - [cite_start]Provide dietary advice based on the user's simulated goal[cite: 91].
+    - **If Goal is Bulking:** Show text like "Fokus pada surplus kalori (+300-500 kkal dari kebutuhan harian). Prioritaskan protein tinggi (1.6-2.2g per kg berat badan) dari sumber seperti dada ayam, telur, dan ikan. Pastikan karbohidrat kompleks tercukupi untuk energi."
+    - **If Goal is Cutting:** Show text like "Terapkan defisit kalori (-300-500 kkal dari kebutuhan harian). Jaga asupan protein tetap tinggi untuk mempertahankan massa otot. Perbanyak konsumsi serat dari sayuran untuk rasa kenyang lebih lama."
+- **Tab 3: "Rekomendasi Pola Tidur"**
+    - [cite_start]Provide general advice[cite: 91]. Text: "Tidur berkualitas selama 7-9 jam setiap malam sangat krusial untuk pemulihan otot, regulasi hormon, dan tingkat energi. Hindari penggunaan gawai 1 jam sebelum tidur."
+
+**4. AI Chatbot (Floating Component)**
+
+- **Implementation:** This will be a fixed-position component present on all dashboard pages, managed by Alpine.js.
+- **UI:**
+    - A floating action button with a `ChatBubbleLeftRightIcon` at the bottom-right of the screen.
+    - **Chat Window (`x-show`):** Clicking the button toggles the visibility of a chat window. This window should have:
+        - A header: "Tanya FitAI".
+        - A message display area (a scrollable `div`).
+        - An input field at the bottom with a "Kirim" button.
+- **Interactivity (Alpine.js):**
+    - The component needs an `x-data` object to manage `isOpen`, `newMessage`, and an array of `messages` (e.g., `{ role: 'user'/'ai', text: '...' }`).
+    - When the user sends a message, add it to the `messages` array.
+    - **Simulate AI Response:** After the user sends a message, use `setTimeout` for 1 second, then push a simulated AI response to the `messages` array.
+    - **Simulated Logic:**
+        - [cite_start]If user input includes "protein", respond: "Protein penting untuk membangun otot. Sumber baiknya adalah dada ayam, ikan, dan telur." [cite: 98]
+        - [cite_start]If user input includes "pemanasan", respond: "Pemanasan wajib dilakukan 5-10 menit sebelum latihan inti untuk mencegah cedera." [cite: 10]
+        - If user input includes "cardio", respond: "Cardio baik untuk kesehatan jantung. Lakukan 2-3 kali seminggu, bisa setelah latihan beban atau di hari terpisah."
+        - Default response: "Maaf, saya belum mengerti pertanyaan itu. Coba tanyakan hal lain seputar dunia fitness."
+
+**5. Controller and Routes**
+
+- **`routes/web.php`:** Define all necessary routes (`/dashboard`, `/rencana-saya`, `/generate-plan`). Use middleware to protect them.
+- **`DashboardController.php`:**
+    - `index()`: Return the dashboard view with simulated data.
+    - `showPlan()`: Return the detailed plan view.
+    - `generatePlan(Request $request)`: This method should handle the form POST. In this simulation, simply take the user's goal from the request and save it to the session, then redirect to `/dashboard`.
+
+---
+
+**Final Instruction for the AI:**
+Please generate the complete code for each part: the `DashboardController`, the routes in `web.php`, and the separate Blade files for `dashboard.blade.php` and `rencana-saya.blade.php`. Include a main layout file (`layouts/app.blade.php`) that contains the base HTML structure, navbar, and the floating AI chat component. Ensure all code is clean, well-commented, and fully responsive.
