@@ -22,6 +22,8 @@ export default function Dashboard() {
   const createProfileMutation = useMutation({
     mutationFn: async (profileData: any) => {
       const res = await apiRequest("POST", "/api/profile", profileData);
+      // persist to localStorage for serverless functions that don't keep memory state
+      window.localStorage.setItem('userProfile', JSON.stringify(profileData));
       return res.json();
     },
     onSuccess: () => {

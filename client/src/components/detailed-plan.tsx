@@ -12,7 +12,14 @@ export default function DetailedPlan({ userGoal }: DetailedPlanProps) {
   const { data: aiPlans, isLoading: isLoadingPlans } = useQuery<AIPlans>({
     queryKey: ['/api/generate-plans'],
     queryFn: async () => {
-      const response = await fetch('/api/generate-plans', { method: 'POST' });
+      // Pass profile if available to serverless function to avoid relying on in-memory state
+      const savedProfile = window.localStorage.getItem('userProfile');
+      const profile = savedProfile ? JSON.parse(savedProfile) : undefined;
+      const response = await fetch('/api/generate-plans', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile }),
+      });
       if (!response.ok) {
         throw new Error('Failed to generate AI plans');
       }

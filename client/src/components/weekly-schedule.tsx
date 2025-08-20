@@ -12,7 +12,13 @@ export default function WeeklySchedule({ completed, onToggleCompletion, disabled
   const { data: aiSchedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['/api/generate-schedule'],
     queryFn: async () => {
-      const response = await fetch('/api/generate-schedule', { method: 'POST' });
+      const savedProfile = window.localStorage.getItem('userProfile');
+      const profile = savedProfile ? JSON.parse(savedProfile) : undefined;
+      const response = await fetch('/api/generate-schedule', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile }),
+      });
       if (!response.ok) {
         throw new Error('Failed to generate AI schedule');
       }

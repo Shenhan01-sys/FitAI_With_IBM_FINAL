@@ -1,4 +1,4 @@
-import type { UserProfile } from "@shared/schema";
+import type { UserProfile } from "../shared/schema";
 
 interface ReplicateResponse {
   id: string;

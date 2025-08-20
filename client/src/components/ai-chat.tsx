@@ -32,12 +32,14 @@ export default function AIChat({ userName }: AIChatProps = {}) {
 
   const getAIResponse = async (userInput: string): Promise<string> => {
     try {
+      const savedProfile = window.localStorage.getItem('userProfile');
+      const profile = savedProfile ? JSON.parse(savedProfile) : undefined;
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userInput })
+        body: JSON.stringify({ message: userInput, profile })
       });
 
       if (!response.ok) {
