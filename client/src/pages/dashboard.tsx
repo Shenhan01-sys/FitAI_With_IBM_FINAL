@@ -9,10 +9,12 @@ import ProgressCard from "@/components/progress-card";
 import MotivationalAlert from "@/components/motivational-alert";
 import AIChat from "@/components/ai-chat";
 import type { UserProfile } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
   const [showAlert, setShowAlert] = useState(false);
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   const { data: profile, isLoading } = useQuery<UserProfile | null>({
     queryKey: ['/api/profile'],
@@ -26,8 +28,11 @@ export default function Dashboard() {
       window.localStorage.setItem('userProfile', JSON.stringify(profileData));
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/api/profile'], data);
+    },
+    onSettled: () => {
+      navigate('/');
     },
   });
 
@@ -36,12 +41,15 @@ export default function Dashboard() {
       const res = await apiRequest("PATCH", "/api/profile/completion", { completed });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['/api/profile'], updated);
     },
   });
 
   const handleOnboardingComplete = (formData: any) => {
+    try {
+      window.localStorage.setItem('userProfile', JSON.stringify(formData));
+    } catch {}
     createProfileMutation.mutate(formData);
   };
 
@@ -60,7 +68,8 @@ export default function Dashboard() {
     }
   };
 
-  const showOnboarding = !isLoading && !profile;
+  const hasLocalProfile = typeof window !== 'undefined' && !!window.localStorage.getItem('userProfile');
+  const showOnboarding = !isLoading && !profile && !hasLocalProfile;
 
   if (isLoading) {
     return (
