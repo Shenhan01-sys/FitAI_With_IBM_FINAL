@@ -1,3 +1,5 @@
+// NOTE: Using a single Netlify function handler that routes /api/* paths.
+// We've removed the serverless-http export to avoid duplicate handler exports.
 import type { Handler } from '@netlify/functions';
 import { storage } from '../../server/storage';
 import { insertUserProfileSchema } from '../../shared/schema';
@@ -23,11 +25,20 @@ export const handler: Handler = async (event) => {
     // Derive subpath from the function URL so we can route inside this single function
     const url = new URL(event.rawUrl);
     const fnPrefix = '/.netlify/functions/api';
-    const pathname = url.pathname.startsWith(fnPrefix)
-      ? url.pathname.slice(fnPrefix.length)
-      : url.pathname;
+    let pathname = url.pathname;
+    // Support both function URL and original /api/* URL in dev/prod
+    if (pathname.startsWith(fnPrefix)) {
+      pathname = pathname.slice(fnPrefix.length);
+    }
+    // If we still have /api/*, strip the /api prefix
+    if (pathname === '/api') pathname = '/';
+    else if (pathname.startsWith('/api/')) pathname = pathname.slice(4);
+    // Normalize: remove trailing slash (except root)
+    if (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
 
     const method = event.httpMethod.toUpperCase();
+  // Debug minimal log (safe for CF envs)
+  try { console.log(`[fn api] ${method} ${pathname}`); } catch {}
 
     // Basic CORS preflight support if needed
     if (method === 'OPTIONS') {
@@ -43,7 +54,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Route: /api/profile (GET, POST)
-    if (pathname === '/profile') {
+  if (pathname === '/profile') {
       if (method === 'GET') {
         const userId = 'demo-user';
         const profile = await storage.getUserProfile(userId);
@@ -71,7 +82,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Route: /api/profile/completion (PATCH)
-    if (pathname === '/profile/completion') {
+  if (pathname === '/profile/completion') {
       if (method === 'PATCH') {
         const userId = 'demo-user';
         const body = event.body ? JSON.parse(event.body) : {};
@@ -87,7 +98,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Route: /api/generate-plans (POST)
-    if (pathname === '/generate-plans') {
+  if (pathname === '/generate-plans') {
       if (method === 'POST') {
         try {
           const userId = 'demo-user';
@@ -111,7 +122,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Route: /api/generate-schedule (POST)
-    if (pathname === '/generate-schedule') {
+  if (pathname === '/generate-schedule') {
       if (method === 'POST') {
         try {
           const userId = 'demo-user';
@@ -130,7 +141,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Route: /api/chat (POST)
-    if (pathname === '/chat') {
+  if (pathname === '/chat') {
       if (method === 'POST') {
         try {
           const body = event.body ? JSON.parse(event.body) : {};

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
@@ -70,6 +70,26 @@ export default function Dashboard() {
 
   const hasLocalProfile = typeof window !== 'undefined' && !!window.localStorage.getItem('userProfile');
   const showOnboarding = !isLoading && !profile && !hasLocalProfile;
+
+  // Rehydrate server profile from localStorage when server memory resets
+  // but skip if user is currently on onboarding route to prevent bouncing.
+  const [location] = useLocation();
+  useEffect(() => {
+    if (isLoading) return;
+    if (profile) return;
+    if (location === "/onboarding") return;
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem('userProfile') : null;
+      if (raw) {
+        const local = JSON.parse(raw);
+        if (!createProfileMutation.isPending) {
+          createProfileMutation.mutate(local);
+        }
+      }
+    } catch {
+      // ignore JSON errors
+    }
+  }, [isLoading, profile, createProfileMutation.isPending, location]);
 
   if (isLoading) {
     return (

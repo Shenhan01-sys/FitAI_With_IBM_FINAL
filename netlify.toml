@@ -6,6 +6,16 @@
 [dev]
   command = "npm run dev"
   targetPort = 5000
-  port = 8888
   framework = "#custom"
+  autoLaunch = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
