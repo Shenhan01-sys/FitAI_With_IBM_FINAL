@@ -45,7 +45,7 @@ export class AIService {
           version: this.modelVersionHash,
           input: {
             prompt: prompt,
-            max_tokens: 500,
+            max_tokens: 1000,
             temperature: 0.7,
             top_p: 0.9,
             top_k: 50,
